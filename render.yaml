@@ -1,15 +1,13 @@
-
 services:
   - type: web
     name: discord-bot-french
     env: python
-    runtime: python
-    buildCommand: pip install -r render_requirements.txt
-    startCommand: python main.py
     plan: free
-    region: oregon
-    autoDeploy: false
+    buildCommand: "pip install -r render_requirements.txt"
+    startCommand: "python main.py"
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
       - key: DISCORD_TOKEN
         sync: false
       - key: PORT
