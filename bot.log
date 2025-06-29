@@ -1,0 +1,41 @@
+2025-06-29 12:10:23,055 - discord.client - WARNING - PyNaCl is not installed, voice will NOT be supported
+2025-06-29 12:10:23,056 - root - ERROR - ❌ Token Discord non trouvé dans les variables d'environnement!
+2025-06-29 14:51:43,698 - discord.client - WARNING - PyNaCl is not installed, voice will NOT be supported
+2025-06-29 14:51:43,699 - root - ERROR - ❌ Token Discord non trouvé dans les variables d'environnement!
+2025-06-29 14:59:09,633 - discord.client - WARNING - PyNaCl is not installed, voice will NOT be supported
+2025-06-29 14:59:09,633 - discord.client - INFO - logging in using static token
+2025-06-29 14:59:10,256 - root - INFO - ✅ Cog cogs.logs chargé avec succès
+2025-06-29 14:59:10,266 - root - INFO - ✅ Cog cogs.moderation chargé avec succès
+2025-06-29 14:59:10,270 - root - INFO - ✅ Cog cogs.configuration chargé avec succès
+2025-06-29 14:59:10,277 - root - INFO - ✅ Cog cogs.anti_spam chargé avec succès
+2025-06-29 14:59:10,342 - root - INFO - ✅ Cog cogs.utility chargé avec succès
+2025-06-29 14:59:10,613 - root - INFO - ✅ 25 commandes slash synchronisées
+2025-06-29 14:59:10,815 - discord.gateway - INFO - Shard ID None has connected to Gateway (Session ID: dc2c36232c1cf4e46fa7893d57a7c5fe).
+2025-06-29 15:03:05,652 - discord.client - WARNING - PyNaCl is not installed, voice will NOT be supported
+2025-06-29 15:03:05,652 - discord.client - INFO - logging in using static token
+2025-06-29 15:03:06,141 - root - INFO - ✅ Cog cogs.logs chargé avec succès
+2025-06-29 15:03:06,161 - root - INFO - ✅ Cog cogs.moderation chargé avec succès
+2025-06-29 15:03:06,170 - root - INFO - ✅ Cog cogs.configuration chargé avec succès
+2025-06-29 15:03:06,172 - root - INFO - ✅ Cog cogs.anti_spam chargé avec succès
+2025-06-29 15:03:06,192 - root - INFO - ✅ Cog cogs.utility chargé avec succès
+2025-06-29 15:03:06,449 - root - INFO - ✅ 30 commandes slash synchronisées
+2025-06-29 15:03:06,631 - discord.gateway - INFO - Shard ID None has connected to Gateway (Session ID: 9ee74e864d63292039b52610cdfe5cc3).
+2025-06-29 15:06:44,811 - discord.client - WARNING - PyNaCl is not installed, voice will NOT be supported
+2025-06-29 15:06:44,811 - discord.client - INFO - logging in using static token
+2025-06-29 15:06:45,277 - root - INFO - ✅ Cog cogs.logs chargé avec succès
+2025-06-29 15:06:45,281 - root - INFO - ✅ Cog cogs.moderation chargé avec succès
+2025-06-29 15:06:45,288 - root - INFO - ✅ Cog cogs.configuration chargé avec succès
+2025-06-29 15:06:45,290 - root - INFO - ✅ Cog cogs.anti_spam chargé avec succès
+2025-06-29 15:06:45,301 - root - INFO - ✅ Cog cogs.utility chargé avec succès
+2025-06-29 15:06:45,663 - root - INFO - ✅ 30 commandes slash synchronisées
+2025-06-29 15:07:12,896 - discord.client - WARNING - PyNaCl is not installed, voice will NOT be supported
+2025-06-29 15:07:12,896 - discord.client - INFO - logging in using static token
+2025-06-29 15:07:13,314 - root - INFO - ✅ Cog cogs.logs chargé avec succès
+2025-06-29 15:07:13,318 - root - INFO - ✅ Cog cogs.moderation chargé avec succès
+2025-06-29 15:07:13,320 - root - INFO - ✅ Cog cogs.configuration chargé avec succès
+2025-06-29 15:07:13,322 - root - INFO - ✅ Cog cogs.anti_spam chargé avec succès
+2025-06-29 15:07:13,336 - root - INFO - ✅ Cog cogs.utility chargé avec succès
+2025-06-29 15:07:13,403 - discord.http - WARNING - We are being rate limited. PUT https://discord.com/api/v10/applications/1384304578190643350/commands responded with 429. Retrying in 2.04 seconds.
+2025-06-29 15:08:15,677 - root - INFO - ✅ 30 commandes slash synchronisées
+2025-06-29 15:08:15,997 - root - INFO - ✅ Synchronisation globale: 30 commandes
+2025-06-29 15:08:16,231 - discord.gateway - INFO - Shard ID None has connected to Gateway (Session ID: 6accb4510fcf812c414b9c2b8d2b870b).
