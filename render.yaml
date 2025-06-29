@@ -3,13 +3,25 @@ services:
   - type: web
     name: discord-bot-french
     env: python
+    runtime: python
     buildCommand: pip install -r render_requirements.txt
     startCommand: python main.py
     plan: free
+    region: oregon
+    autoDeploy: false
     envVars:
       - key: DISCORD_TOKEN
         sync: false
       - key: PORT
         value: "10000"
-    autoDeploy: false
+      - key: PYTHON_VERSION
+        value: "3.12.7"
     healthCheckPath: /health
+    numInstances: 1
+    scaling:
+      minInstances: 1
+      maxInstances: 1
+    disk:
+      name: discord-bot-storage
+      mountPath: /opt/render/project/storage
+      sizeGB: 1
