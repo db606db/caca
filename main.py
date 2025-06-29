@@ -1,3 +1,4 @@
+
 import discord
 from discord.ext import commands
 import asyncio
@@ -7,40 +8,101 @@ from config.settings import BotConfig
 import threading
 import time
 from http.server import HTTPServer, BaseHTTPRequestHandler
+import signal
+import sys
 
-# Configuration du logging pour Render (sans fichier de log)
+# Configuration du logging pour Render
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.StreamHandler()  # Logs vers stdout pour Render
+        logging.StreamHandler()
     ]
 )
 
-# Serveur HTTP simple pour Render (requis pour les web services)
-class HealthHandler(BaseHTTPRequestHandler):
+# Serveur HTTP keep-alive pour Render
+class KeepAliveHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/health':
             self.send_response(200)
-            self.send_header('Content-type', 'text/plain')
+            self.send_header('Content-type', 'application/json')
             self.end_headers()
-            self.wfile.write(b'Bot Discord actif')
-        else:
+            response = {
+                "status": "healthy",
+                "bot_status": "online" if hasattr(self.server, 'bot') and self.server.bot.is_ready() else "starting",
+                "timestamp": time.time()
+            }
+            self.wfile.write(str(response).encode())
+        elif self.path == '/ping':
             self.send_response(200)
             self.send_header('Content-type', 'text/plain')
             self.end_headers()
-            self.wfile.write(b'Bot Discord Francais - Service actif')
+            self.wfile.write(b'pong')
+        elif self.path == '/':
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+            html = '''
+            <!DOCTYPE html>
+            <html>
+            <head><title>Discord Bot Français</title></head>
+            <body>
+                <h1>🤖 Bot Discord Français</h1>
+                <p>✅ Service actif sur Render</p>
+                <p>🛡️ Bot de modération complet</p>
+                <p>📊 Status: En ligne</p>
+            </body>
+            </html>
+            '''
+            self.wfile.write(html.encode())
+        else:
+            self.send_response(404)
+            self.end_headers()
+    
+    def do_POST(self):
+        # Gérer les webhooks Render si nécessaire
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b'OK')
     
     def log_message(self, format, *args):
-        # Désactive les logs HTTP pour éviter le spam
+        # Logs silencieux pour éviter le spam
         pass
 
-def start_health_server():
-    """Démarre le serveur de santé pour Render"""
-    port = int(os.environ.get('PORT', 10000))  # Port par défaut Render
-    server = HTTPServer(('0.0.0.0', port), HealthHandler)
-    logging.info(f"🌐 Serveur de santé démarré sur le port {port}")
-    server.serve_forever()
+class KeepAliveServer:
+    def __init__(self, port=10000):
+        self.port = port
+        self.server = None
+        self.thread = None
+        self.running = False
+    
+    def start(self, bot=None):
+        """Démarre le serveur keep-alive"""
+        try:
+            self.server = HTTPServer(('0.0.0.0', self.port), KeepAliveHandler)
+            if bot:
+                self.server.bot = bot
+            
+            self.thread = threading.Thread(target=self._run_server, daemon=True)
+            self.thread.start()
+            self.running = True
+            logging.info(f"🌐 Serveur keep-alive démarré sur le port {self.port}")
+        except Exception as e:
+            logging.error(f"❌ Erreur serveur keep-alive: {e}")
+    
+    def _run_server(self):
+        """Execute le serveur HTTP"""
+        try:
+            self.server.serve_forever()
+        except Exception as e:
+            logging.error(f"❌ Serveur keep-alive arrêté: {e}")
+    
+    def stop(self):
+        """Arrête le serveur proprement"""
+        if self.server and self.running:
+            self.server.shutdown()
+            self.running = False
+            logging.info("🛑 Serveur keep-alive arrêté")
 
 class FrenchBot(commands.Bot):
     def __init__(self):
@@ -52,6 +114,7 @@ class FrenchBot(commands.Bot):
             case_insensitive=True
         )
         self.config = BotConfig()
+        self.keep_alive_server = None
         
     async def setup_hook(self):
         """Chargement des cogs au démarrage"""
@@ -75,7 +138,7 @@ class FrenchBot(commands.Bot):
             synced = await self.tree.sync()
             logging.info(f"✅ {len(synced)} commandes slash synchronisées")
             
-            # Forcer la synchronisation globale pour s'assurer que toutes les commandes sont visibles
+            # Synchronisation globale
             global_synced = await self.tree.sync(guild=None)
             logging.info(f"✅ Synchronisation globale: {len(global_synced)} commandes")
         except Exception as e:
@@ -86,14 +149,28 @@ class FrenchBot(commands.Bot):
         print(f"🤖 {self.user} est connecté et prêt!")
         print(f"📊 Connecté à {len(self.guilds)} serveur(s)")
         
-        # Définir le statut par défaut
+        # Statut du bot
         await self.change_presence(
             activity=discord.Activity(
                 type=discord.ActivityType.watching,
-                name="🛡️ Protéger le serveur"
+                name="🛡️ Protéger le serveur | Render Online"
             ),
             status=discord.Status.online
         )
+        
+        # Tâche de maintenance keep-alive
+        if not hasattr(self, '_keep_alive_task'):
+            self._keep_alive_task = asyncio.create_task(self._keep_alive_loop())
+    
+    async def _keep_alive_loop(self):
+        """Boucle de maintenance pour keep-alive"""
+        while True:
+            try:
+                await asyncio.sleep(300)  # 5 minutes
+                logging.info(f"💓 Keep-alive: Bot actif - {len(self.guilds)} serveurs")
+            except Exception as e:
+                logging.error(f"❌ Erreur keep-alive: {e}")
+                await asyncio.sleep(60)
     
     async def on_command_error(self, ctx, error):
         """Gestion globale des erreurs"""
@@ -107,30 +184,61 @@ class FrenchBot(commands.Bot):
             logging.error(f"Erreur dans {ctx.command}: {error}")
             await ctx.send("❌ Une erreur inattendue s'est produite.")
 
+# Gestionnaire de signaux pour arrêt propre
+def signal_handler(signum, frame):
+    logging.info("🛑 Signal d'arrêt reçu, fermeture propre...")
+    sys.exit(0)
+
 async def main():
-    """Fonction principale pour démarrer le bot avec serveur Render"""
-    # Démarrer le serveur de santé pour Render en arrière-plan
-    health_thread = threading.Thread(target=start_health_server, daemon=True)
-    health_thread.start()
+    """Fonction principale optimisée pour Render"""
+    # Configuration des signaux
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
     
-    # Attendre que le serveur démarre
-    await asyncio.sleep(1)
+    # Port Render
+    port = int(os.environ.get('PORT', 10000))
     
+    # Serveur keep-alive
+    keep_alive = KeepAliveServer(port)
+    
+    # Création du bot
     bot = FrenchBot()
+    bot.keep_alive_server = keep_alive
     
-    # Récupération du token depuis les variables d'environnement
+    # Token Discord
     token = os.getenv("DISCORD_TOKEN")
     if not token:
         logging.error("❌ Token Discord non trouvé dans les variables d'environnement!")
         return
     
     try:
-        logging.info("🤖 Démarrage du bot Discord pour Render...")
+        # Démarrage du serveur keep-alive
+        keep_alive.start(bot)
+        
+        # Attendre que le serveur démarre
+        await asyncio.sleep(2)
+        
+        logging.info("🚀 Démarrage du bot Discord sur Render...")
+        logging.info(f"🌐 Serveur keep-alive: http://0.0.0.0:{port}")
+        logging.info("💡 Endpoints: /health, /ping, /")
+        
+        # Démarrage du bot Discord
         await bot.start(token)
+        
     except discord.LoginFailure:
         logging.error("❌ Token Discord invalide!")
+    except KeyboardInterrupt:
+        logging.info("🛑 Arrêt demandé par l'utilisateur")
     except Exception as e:
         logging.error(f"❌ Erreur lors du démarrage: {e}")
+    finally:
+        # Nettoyage
+        if keep_alive:
+            keep_alive.stop()
+        logging.info("🏁 Bot arrêté proprement")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        logging.info("🛑 Arrêt du programme")
